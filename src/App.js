@@ -17,7 +17,7 @@ function App() {
          <Routes>
            <Route exact path = '/' Component={Home} />
            <Route exact path = '/add' Component={AddEdit} />
-           <Route exact path = '/update/:id' Component={AddEdit} />
+           <Route exact path = '/add/:id' Component={AddEdit} />
          </Routes>
      </div>
     </BrowserRouter>

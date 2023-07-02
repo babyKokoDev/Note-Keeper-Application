@@ -8,39 +8,76 @@ const initialState = {
   tagline: "",
   description: "",
   pinned: false,
-  date: new Date().toLocaleDateString("en-IN")
+  date: new Date().toLocaleDateString("en-IN"),
 };
 
 const AddEdit = () => {
   const [state, setState] = useState(initialState);
   const [data, setData] = useState({});
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const { title, tagline, description } = state;
+  const { title, tagline, description, date, pinned } = state;
 
-  const handleSubmit = (e) => {
-       e.preventDefault()
-       if(!title || !tagline || !description) {
-           toast.error('Please provide value in each input field')
-       } else {
-          fireDb.child('notes').push(state, (err)=>{
-            if (err) {
-                toast.error(err)
-            } else {
-                toast.success('Note added successfully')
-            }
-          })
-          setTimeout(() => {
-               navigate('/')
-          }, 1000);
-       }
-  }
+  const { id } = useParams();
+
+  useEffect(() => {
+    fireDb.child("notes").on("value", (snapshot) => {
+      if (snapshot.val() !== null) {
+        setData({ ...snapshot.val() });
+      } else {
+        setData({});
+      }
+    });
+    return () => {
+      setData({});
+    };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      setState({ ...data[id], date: new Date().toLocaleDateString("en-IN"), pinned : pinned });
+    } else {
+      setState({ ...initialState });
+    }
+
+    return () => {
+        setState({ ...initialState })
+    }
+  }, [id, data]);
 
   const handleInputChange = (e) => {
-      const {name, value} = e.target
-      setState({...state, [name] : value})
-  }
+    const { name, value } = e.target;
+    setState({ ...state, [name]: value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!title || !tagline || !description) {
+      toast.error("Please provide value in each input field");
+    } else {
+        if(!id) {
+            fireDb.child("notes").push(state, (err) => {
+                if (err) {
+                  toast.error(err);
+                } else {
+                  toast.success("Note added successfully");
+                }
+              });
+        } else {
+            fireDb.child(`notes/${id}`).set(state, (err) => {
+                if (err) {
+                  toast.error(err);
+                } else {
+                  toast.success("Note updated successfully");
+                }
+              });
+        }
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
+    }
+  };
 
   return (
     <section className="relative flex flex-wrap lg:h-screen lg:items-center mx-5">
@@ -49,11 +86,10 @@ const AddEdit = () => {
           <h1 className="text-2xl font-bold sm:text-3xl">Get started today!</h1>
         </div>
 
-        <form 
-           action="" 
-           className="mx-auto mb-0 mt-8 max-w-md space-y-4"
-           onSubmit={handleSubmit}
-        
+        <form
+          action=""
+          className="mx-auto mb-0 mt-8 max-w-md space-y-4"
+          onSubmit={handleSubmit}
         >
           <div>
             <div className="relative">
@@ -63,7 +99,7 @@ const AddEdit = () => {
                 placeholder="Note Title"
                 id="title"
                 name="title"
-                value={title}
+                value={title || ""}
                 onChange={handleInputChange}
               />
             </div>
@@ -77,7 +113,7 @@ const AddEdit = () => {
                 placeholder="Note Tagline"
                 id="tagline"
                 name="tagline"
-                value={tagline}
+                value={tagline || ""}
                 onChange={handleInputChange}
               />
             </div>
@@ -92,7 +128,7 @@ const AddEdit = () => {
                 maxLength={150}
                 id="description"
                 name="description"
-                value={description}
+                value={description || ""}
                 onChange={handleInputChange}
               />
             </div>
@@ -103,7 +139,7 @@ const AddEdit = () => {
               type="submit"
               className=" w-full inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
             >
-              Add Note
+              {id ? 'Update Note' : 'Add Note'}
             </button>
           </div>
         </form>
