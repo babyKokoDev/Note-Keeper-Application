@@ -1,20 +1,60 @@
-import React, { useState } from "react";
-import { BsPinAngle } from "react-icons/bs";
+import React, { useEffect, useState } from "react";
+import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
 import { AiFillDelete } from "react-icons/ai";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import fireDb from "../firebase";
-import { toast } from "react-toastify";
+import { toast } from "react-toastify"
+import { initialState } from "../pages/AddEdit";
 
 const Card = ({ title, tagline, description, pinned, date, id }) => {
-  
+  const [state, setState] = useState(initialState);
+  const [data, setData] = useState({});
+
+  useEffect(()=>{
+    fireDb.child('notes').on('value', (snapshot) => {
+        if (snapshot.val() !== null){
+            setData({...snapshot.val()})
+        } else {
+            setData({})
+        }
+    })
+    return () => {
+        setData({})
+    }
+}, [])
+
+useEffect(() => {
+  if (id) {
+    setState({ ...data[id], pinned : !pinned });
+  } else {
+    setState({ ...initialState });
+  }
+
+  return () => {
+      setState({ ...initialState })
+  }
+}, [pinned, data]);
+
+const setPin = (id) => {
+  fireDb.child(`notes/${id}`).set(state, (err) => {
+    if (err) {
+      toast.error(err);
+    } else {
+      pinned ? toast.success("Note unpinned successfully") : toast.success("Note pinned successfully");
+    }
+  });
+}
+
   const onDelete = (id) => {
     fireDb.child(`notes/${id}`).remove((err) => {
       if (err) {
         toast.error(err);
       } else {
+        
         toast.success("Note deleted successfully");
       }
     });
+
 
   };
   return (
@@ -38,8 +78,14 @@ const Card = ({ title, tagline, description, pinned, date, id }) => {
         >
           Update
         </Link>
-        <div className="flex items-center">
-          <BsPinAngle className="bg-white w-10 h-10 mx-4 rounded-full p-2 cursor-pointer" />
+        <div className="flex items-center" >
+          <div onClick={()=>setPin(id)}>
+            {
+              pinned ? <BsPinAngleFill className="bg-white w-10 h-10 mx-4 rounded-full p-2 cursor-pointer" /> : <BsPinAngle className="bg-white w-10 h-10 mx-4 rounded-full p-2 cursor-pointer" />
+            }
+             
+          </div>
+         
 
           <AiFillDelete
             className="bg-white w-10 h-10 mx-4 rounded-full p-2 cursor-pointer"

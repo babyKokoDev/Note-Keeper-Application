@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import fireDb from "../firebase";
 import { toast } from "react-toastify";
 
-const initialState = {
+export const initialState = {
   title: "",
   tagline: "",
   description: "",
