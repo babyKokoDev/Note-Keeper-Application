@@ -36,7 +36,7 @@ const AddEdit = () => {
 
   useEffect(() => {
     if (id) {
-      setState({ ...data[id], date: new Date().toLocaleDateString("en-IN"), pinned : pinned });
+      setState({ ...data[id], date: new Date().toLocaleDateString("en-IN")});
     } else {
       setState({ ...initialState });
     }

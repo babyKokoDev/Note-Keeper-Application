@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 
 const Home = () => {
     const [data, setData] = useState({})
+
     useEffect(()=>{
         fireDb.child('notes').on('value', (snapshot) => {
             if (snapshot.val() !== null){
@@ -18,9 +19,14 @@ const Home = () => {
             setData({})
         }
     }, [])
+          
+         
   return (
-      <div className='w-[80%] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 p-5 bg-gray-200'>
+       <>
+
+       <div className='w-[80%] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 p-5 bg-gray-200'>
         {Object.keys(data).map((id, index)=>(
+            data[id].pinned === true &&
               <Card 
               key={id}
               title = {data[id].title} 
@@ -29,9 +35,23 @@ const Home = () => {
               pinned = {data[id].pinned}
               date = {data[id].date}
               id = {id} />
-        ))}
-           
+        ))}      
       </div>
+      <div className='w-[80%] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 p-5 bg-gray-200 mb-5'>
+        {Object.keys(data).map((id, index)=>(
+            data[id].pinned === false &&
+              <Card 
+              key={id}
+              title = {data[id].title} 
+              tagline = {data[id].tagline}
+              description = {data[id].description}
+              pinned = {data[id].pinned}
+              date = {data[id].date}
+              id = {id} />
+        ))}      
+      </div>
+      </>
+
     
   )
 }
